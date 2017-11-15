@@ -1,4 +1,4 @@
-### First React Native
+# First React Native
 
 Playground for my first React Native App.
 
