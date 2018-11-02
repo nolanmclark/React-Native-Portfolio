@@ -1,20 +1,16 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
 package com.facebook.react.bridge;
 
+import com.facebook.react.common.build.ReactBuildConfig;
+import java.lang.reflect.Constructor;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
-
-import java.lang.reflect.Constructor;
-
-import com.facebook.react.common.build.ReactBuildConfig;
 
 /**
  * A specification for a native module. This exists so that we don't have to pay the cost
@@ -27,8 +23,9 @@ public class ModuleSpec {
   private static final Class[] EMPTY_SIGNATURE = {};
   private static final Class[] CONTEXT_SIGNATURE = { ReactApplicationContext.class };
 
-  private final Class<? extends NativeModule> mType;
+  private final @Nullable Class<? extends NativeModule> mType;
   private final Provider<? extends NativeModule> mProvider;
+  private final String mClassName;
 
   /**
    * Simple spec for modules with a default constructor.
@@ -64,14 +61,38 @@ public class ModuleSpec {
     });
   }
 
-  public ModuleSpec(Class<? extends NativeModule> type, Provider<? extends NativeModule> provider) {
-    mType = type;
-    mProvider = provider;
+  public static ModuleSpec viewManagerSpec(Provider<? extends NativeModule> provider) {
+    return new ModuleSpec(null, provider);
   }
 
-  public Class<? extends NativeModule> getType() {
+  public static ModuleSpec nativeModuleSpec(
+      Class<? extends NativeModule> type, Provider<? extends NativeModule> provider) {
+    return new ModuleSpec(provider, type.getName());
+  }
+
+  public static ModuleSpec nativeModuleSpec(
+      String className, Provider<? extends NativeModule> provider) {
+    return new ModuleSpec(provider, className);
+  }
+
+  private ModuleSpec(
+      @Nullable Class<? extends NativeModule> type, Provider<? extends NativeModule> provider) {
+    mType = type;
+    mProvider = provider;
+    mClassName = type == null ? null : type.getName();
+  }
+
+  public ModuleSpec(Provider<? extends NativeModule> provider, String name) {
+    mType = null;
+    mProvider = provider;
+    mClassName = name;
+  }
+
+  public @Nullable Class<? extends NativeModule> getType() {
     return mType;
   }
+
+  public String getClassName(){return mClassName;}
 
   public Provider<? extends NativeModule> getProvider() {
     return mProvider;
